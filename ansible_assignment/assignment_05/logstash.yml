@@ -1,0 +1,27 @@
+---
+name: Install Logstash on Ubuntu
+hosts: server1
+become: yes
+tasks:
+  - name: Add Logstash APT Repository Key
+    apt_key:
+      url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+  - name: Add Logstash APT Repository
+    apt_repository:
+      repo: deb https://artifacts.elastic.co/packages/7.x/apt stable main
+      state: present
+      update_cache: yes
+
+  - name: Install Logstash Package
+    apt:
+      name: logstash
+      state: present
+
+  - name: Start Logstash Service
+    service:
+      name: logstash
+      state: started
+      enabled: yes
+...

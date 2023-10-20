@@ -1,0 +1,69 @@
+# ANSIBLE ASSIGNMENT-1
+# Complete the following steps with the help of ansible modules:
+
+# UserManager:
+# Add NinjaTeam (Simulate Group) ex: team1
+# Add a User (Simulate) under a team ex: Nitish added to team1 Ensure below constraints are met:
+# A user should have read,write, execute access to home directory
+# All the users of same team should have read and excute access to home directory of fellow team members.
+# In home directory of every user there should be 2 shared directories
+# Team: Same team members will have full access
+# Ninja: All ninja's will have full access
+# Additional Features:
+
+# Change user Shell
+# Change user password
+# Delete user
+# Delete Group
+# List user or Team
+
+
+
+---
+- name: making directory and permission
+  hosts: server1
+  become: true
+  tasks:
+    - name: Create a group
+      group: 
+        name: team1
+
+    - name: Nitish added to team1
+      user: 
+        name: Nitish
+        group: team1
+        createhome: yes
+    
+    - name: Ensure user has read, write, and execute access to home directory
+      file:
+        path: /home/Nitish    
+        owner: Nitish         
+        group: team1         
+        mode: 0755            
+    
+    - name: All the users of same team should have read and excute access to home directory of fellow team members.
+      file:
+        path: /home/Nitish/team    
+        owner: Nitish               
+        group: team1                
+        mode: 0770 
+        state: directory
+
+    - name: All the users of same team should have read and excute access to home directory of fellow team members.
+      file:
+        path: /home/Nitish/ninja     
+        owner: Nitish                
+        group: team1                 
+        mode: 0777 
+        state: directory  
+...
+
+
+# Additional Features:
+
+# Change user Shell - ansible server1 -m user -a "name=Nitish shell=/bin/bash" -b
+# Change user password - ansible server1 -m user -a "name=Nitish password='{{ '12345' | password_hash('sha512') }}'" -b
+# Delete user - ansible server1 -m user -a "name=Nitish state=absent remove=true" -b
+# Delete Group - ansible server1 -m group -a "name=team1 state=absent" -b
+# List user or Team - ansible server1 -m shell -a "getent passwd"
+#                     ansible server1 -m shell -a "getent group"

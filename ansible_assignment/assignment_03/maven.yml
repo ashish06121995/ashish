@@ -1,0 +1,66 @@
+# Ansile Assignment-3
+# Setup an entire infra using ansible playbook on aws
+# Setup Spring3HibernateApp (https://github.com/opstree/spring3hibernate) on created infra using ansible playbook by following the below steps:
+# Install MySQL
+# Create the war file for Spring3HibernateApp using maven
+# Install JDK 11
+# Install Tomcat
+# Send the war file created earlier to path "/opt/tomcat/apache-tomcat-7.0.108/webapps/"
+# Restart tomcat service
+# (edited)
+# opstree/spring3hibernate
+# A java loaded application for various testing purpose
+# Website
+# https://opstree.github.io
+
+
+---
+- name: Create the war file for Spring3HibernateApp using maven & update Ubuntu server 
+  hosts: server1
+  gather_facts: yes
+  become: yes
+  vars:
+    mvn_command:
+        - mvn clean 
+        - mvn dependency:resolve
+        - mvn compile
+        - mvn test
+        - mvn package
+        - mvn install
+    src: /home/ubuntu/spring3hibernate/target/spring3hibernate.war
+    dest: /var/lib/tomcat9/webapps/spring3hibernate.war
+
+  tasks:  
+
+    - name: Install Multiple Packages in Ubuntu Server
+      apt: 
+        update_cache: yes
+        name:
+          - mysql-server
+          - openjdk-11-jdk
+          - tomcat9
+          - maven
+        state: present
+
+    - name: Clone repository
+      git:
+        repo: https://github.com/opstree/spring3hibernate
+        dest: /home/ubuntu/spring3hibernate
+    
+    - name: Generate war file
+      command: 
+        chdir: /home/ubuntu/spring3hibernate
+        cmd: "{{ item }}"
+      with_items: "{{ mvn_command }}"
+    
+    - name: Send war to a path 
+      command:
+        cmd: cp "{{ src }}" "{{ dest }}"
+      notify:  Restart Tomcat Service
+
+  handlers:   
+    - name: Restart Tomcat Service
+      service:
+        name: tomcat9
+        state: restarted
+...
